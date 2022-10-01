@@ -1,8 +1,14 @@
-const { test, expect } = require("@playwright/test");
+const { test, expect, request } = require("@playwright/test");
 
 test("Browser Context Playwright test", async ({ browser }) => {
   const context = await browser.newContext();
   const page = await context.newPage();
+
+  // Abort CSS Element:
+  page.route("**/*.css", (route) => route.abort());
+
+  // Block JPG:
+  page.route("**/*.{jpg. png, jpeg}", (route) => route.abort());
 
   const username = page.locator("#username");
   const password = page.locator("#password");
@@ -10,13 +16,19 @@ test("Browser Context Playwright test", async ({ browser }) => {
   const error = page.locator("[style*='block']");
   const cardTitles = page.locator(".card-body a");
 
+  // Print out all response request from back-end:
+  page.on("request", (request) => console.log(request.url()));
+  page.on("response", (response) =>
+    console.log(response.url(), response.status())
+  );
+
   await page.goto("https://rahulshettyacademy.com/loginpagePractise/");
   console.log(" =====> " + (await page.title()) + " <===== ");
   await expect(page).toHaveTitle("LoginPage Practise | Rahul Shetty Academy");
 
   await username.type("dimagadjilla@gmail.com");
   await password.type("3036057Dr");
-  await signIn.click();
+  await signIn.click().screenshot({ path: "part.png" });
   console.log(await error.textContent());
   await expect(error).toContainText("Incorrect username/password.");
 
@@ -37,7 +49,7 @@ test("Page Playwrigth Test", async ({ page }) => {
   await expect(page).toHaveTitle("Google");
 });
 
-test.only("Child Page", async ({ browser }) => {
+test("Child Page", async ({ browser }) => {
   const context = await browser.newContext();
   const page = await context.newPage();
 
